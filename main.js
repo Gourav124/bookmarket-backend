@@ -245,7 +245,7 @@ app.use(express.json());
 
 // ✅ Use DATABASE_URL if provided (Render, Vercel, etc.), else fallback to local
 const con = new Client({
-  connectionString: process.env.DATABASE_URL || "postgresql://bookmarket_db_user:55yrhvSne4RH55UuAwvMtt8Xhnl5uCgq@dpg-d3ac21q4d50c73d5aci0-a/bookmarket_db",
+  connectionString: process.env.DATABASE_URL || "postgresql://bookmarket_db_user:55yrhvSne4RH55UuAwvMtt8Xhnl5uCgq@dpg-d3ac21q4d50c73d5aci0-a.oregon-postgres.render.com/bookmarket_db",
   ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
