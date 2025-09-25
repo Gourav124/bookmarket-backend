@@ -1,351 +1,115 @@
-// const {Client} = require('pg');
-// const express = require('express');
-
-// const app = express();
-// app.use(express.json());
-
-
-// const con = new Client({
-//     host: 'localhost',
-//     user:'postgres',
-//     port: 5432,
-//     password:'Gour@v@2002',
-//     database:'bookmarket'
-
-// });
-
-// con.connect().then(() => {
-//     console.log("Database connected successfully");
-// });
-
-// app.post("/users",async(req,res) => {
-//     const {name,role} = req.body;
-
-//     try {
-//         const result = await con.query(
-//             "INSERT INTO users(name,role) VALUES($1,$2) RETURNING *",
-//             [name,role]
-//         );
-//         res.json(result.rows[0])
-        
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).send("Error inserting user")
-//     }
-// });
-
-// app.get("/users",async(req,res) => {
-//     try {
-//         const result = await con.query("SELECT * FROM users");
-//         res.json(result.rows);
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).send("Error fetching users");
-//     }
-// });
-
-// app.post("/books", async(req,res) => {
-//     const {seller_id,title,description,price,stock,image_url} = req.body;
-
-//     try {
-//         const result = await con.query(
-//             "INSERT INTO books(seller_id, title, description, price, stock, image_url) VALUES($1, $2, $3, $4, $5, $6) RETURNING *",
-//             [seller_id, title, description, price, stock, image_url]
-//         );
-//         res.json(result.rows[0]);
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).send("Error inserting book");
-//     }
-// });
-
-// app.get("/books/:seller_id", async (req, res) => {
-//     const sellerId = parseInt(req.params.seller_id, 10);
-
-//     if (isNaN(sellerId)) {
-//         return res.status(400).send("Invalid seller_id");
-//     }
-
-//     try {
-//         const result = await con.query(
-//             "SELECT * FROM books WHERE seller_id = $1",
-//             [sellerId]
-//         );
-//         res.json(result.rows);
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).send("Error fetching books");
-//     }
-// });
-
-
-// app.get("/books",async(req,res) => {
-//     try {
-//         const result = await con.query(
-//             `SELECT b.*, u.name as seller_name 
-//              FROM books b 
-//              JOIN users u ON b.seller_id = u.id`
-//         );
-//         res.json(result.rows);
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).send("Error fetching books");
-//     }
-// });
-
-// app.post("/cart", async(req,res) =>{
-//     const {buyer_id, book_id, quantity,title,price} = req.body;
-
-//     try {
-//         const result = await con.query(
-//             "INSERT INTO cart(buyer_id, book_id, quantity,title,price) VALUES($1, $2, $3,$4,$5) RETURNING *",
-//             [buyer_id, book_id, quantity,title,price]
-//         );
-//         res.json(result.rows[0]);
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).send("Error adding to cart");
-//     }
-// });
-
-// app.get("/cart/:buyer_id", async (req, res) => {
-//   const buyer_id = parseInt(req.params.buyer_id, 10); // just assign number
-//   if (isNaN(buyer_id)) return res.status(400).send("Invalid buyer_id");
-
-//   try {
-//     const result = await con.query(
-//       `SELECT c.id, b.title, b.price, c.quantity
-//        FROM cart c
-//        JOIN books b ON c.book_id = b.id
-//        WHERE c.buyer_id = $1`,
-//       [buyer_id]
-//     );
-//     res.json(result.rows);
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send("Error fetching cart items");
-//   }
-// });
-
-
-// app.post("/orders", async(req,res) => {
-//     const {buyer_id, seller_id, book_id, status} = req.body;
-
-//     try {
-//         const result = await con.query(
-//             "INSERT INTO orders(buyer_id, seller_id, book_id, status) VALUES($1, $2, $3, $4) RETURNING *",
-//             [buyer_id, seller_id, book_id, status]
-//         );
-//         res.json(result.rows[0]);
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).send("Error placing order");
-//     }
-// });
-
-// app.get("/orders/:seller_id", async(req,res) => {
-
-//     const {seller_id} = req.params;
-
-//     try {
-//         const result = await con.query(
-//             `SELECT o.id, b.title, b.price, o.status, u.name as buyer_name 
-//              FROM orders o 
-//              JOIN books b ON o.book_id = b.id 
-//              JOIN users u ON o.buyer_id = u.id 
-//              WHERE o.seller_id = $1`,
-//             [seller_id]
-//         );
-//         res.json(result.rows);
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).send("Error fetching orders");
-//     }
-// });
-
-// // Update order status
-// app.put("/orders/:id", async (req, res) => {
-//   const { id } = req.params;
-//   const { status } = req.body;
-
-//   try {
-//     const result = await con.query(
-//       "UPDATE orders SET status = $1 WHERE id = $2 RETURNING *",
-//       [status, id]
-//     );
-
-//     if (result.rows.length === 0) {
-//       return res.status(404).send("Order not found");
-//     }
-
-//     res.json(result.rows[0]);
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send("Error updating order status");
-//   }
-// });
-
-
-// // Get both buyer and seller accounts for a user
-// app.get("/users/:name", async (req, res) => {
-//   const { name } = req.params;
-
-//   try {
-//     const result = await con.query(
-//       "SELECT id, role FROM users WHERE name = $1",
-//       [name]
-//     );
-
-//     if (result.rows.length === 0) {
-//       return res.status(404).json({ error: "User not found" });
-//     }
-
-//     res.json(result.rows); // e.g. [{id:1,role:'buyer'},{id:2,role:'seller'}]
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send("Error fetching user roles");
-//   }
-// });
-
-// app.delete("/cart/:id", async (req, res) => {
-//     const cartId = parseInt(req.params.id, 10);
-
-//     if (isNaN(cartId)) {
-//         return res.status(400).send("Invalid cart item id");
-//     }
-
-//     try {
-//         const result = await con.query(
-//             "DELETE FROM cart WHERE id = $1 RETURNING *",
-//             [cartId]
-//         );
-
-//         if (result.rows.length === 0) {
-//             return res.status(404).send("Cart item not found");
-//         }
-
-//         res.json({ message: "Cart item removed", item: result.rows[0] });
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).send("Error removing cart item");
-//     }
-// });
-
-
-
-// app.listen(6000, () =>{
-//     console.log("Server is running on port 6000");
-// })
-const { Client } = require('pg');
+const {Client} = require('pg');
 const express = require('express');
-require('dotenv').config(); // load .env for local dev
 
 const app = express();
 app.use(express.json());
 
-// ✅ Use DATABASE_URL if provided (Render, Vercel, etc.), else fallback to local
+
 const con = new Client({
-  connectionString: process.env.DATABASE_URL || "postgresql://bookmarket_db_user:55yrhvSne4RH55UuAwvMtt8Xhnl5uCgq@dpg-d3ac21q4d50c73d5aci0-a.oregon-postgres.render.com/bookmarket_db",
-  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+    host: 'localhost',
+    user:'postgres',
+    port: 5432,
+    password:'Gour@v@2002',
+    database:'bookmarket'
+
 });
 
-con.connect()
-  .then(() => console.log("Database connected successfully"))
-  .catch(err => console.error("Database connection error:", err));
-
-/* ------------------ USERS ------------------ */
-app.post("/users", async (req, res) => {
-  const { name, role } = req.body;
-
-  try {
-    const result = await con.query(
-      "INSERT INTO users(name,role) VALUES($1,$2) RETURNING *",
-      [name, role]
-    );
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Error inserting user");
-  }
+con.connect().then(() => {
+    console.log("Database connected successfully");
 });
 
-app.get("/users", async (req, res) => {
-  try {
-    const result = await con.query("SELECT * FROM users");
-    res.json(result.rows);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Error fetching users");
-  }
+app.post("/users",async(req,res) => {
+    const {name,role} = req.body;
+
+    try {
+        const result = await con.query(
+            "INSERT INTO users(name,role) VALUES($1,$2) RETURNING *",
+            [name,role]
+        );
+        res.json(result.rows[0])
+        
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error inserting user")
+    }
 });
 
-/* ------------------ BOOKS ------------------ */
-app.post("/books", async (req, res) => {
-  const { seller_id, title, description, price, stock, image_url } = req.body;
+app.get("/users",async(req,res) => {
+    try {
+        const result = await con.query("SELECT * FROM users");
+        res.json(result.rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error fetching users");
+    }
+});
 
-  try {
-    const result = await con.query(
-      "INSERT INTO books(seller_id, title, description, price, stock, image_url) VALUES($1, $2, $3, $4, $5, $6) RETURNING *",
-      [seller_id, title, description, price, stock, image_url]
-    );
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Error inserting book");
-  }
+app.post("/books", async(req,res) => {
+    const {seller_id,title,description,price,stock,image_url} = req.body;
+
+    try {
+        const result = await con.query(
+            "INSERT INTO books(seller_id, title, description, price, stock, image_url) VALUES($1, $2, $3, $4, $5, $6) RETURNING *",
+            [seller_id, title, description, price, stock, image_url]
+        );
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error inserting book");
+    }
 });
 
 app.get("/books/:seller_id", async (req, res) => {
-  const sellerId = parseInt(req.params.seller_id, 10);
+    const sellerId = parseInt(req.params.seller_id, 10);
 
-  if (isNaN(sellerId)) {
-    return res.status(400).send("Invalid seller_id");
-  }
+    if (isNaN(sellerId)) {
+        return res.status(400).send("Invalid seller_id");
+    }
 
-  try {
-    const result = await con.query(
-      "SELECT * FROM books WHERE seller_id = $1",
-      [sellerId]
-    );
-    res.json(result.rows);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Error fetching books");
-  }
+    try {
+        const result = await con.query(
+            "SELECT * FROM books WHERE seller_id = $1",
+            [sellerId]
+        );
+        res.json(result.rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error fetching books");
+    }
 });
 
-app.get("/books", async (req, res) => {
-  try {
-    const result = await con.query(
-      `SELECT b.*, u.name as seller_name 
-       FROM books b 
-       JOIN users u ON b.seller_id = u.id`
-    );
-    res.json(result.rows);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Error fetching books");
-  }
+
+app.get("/books",async(req,res) => {
+    try {
+        const result = await con.query(
+            `SELECT b.*, u.name as seller_name 
+             FROM books b 
+             JOIN users u ON b.seller_id = u.id`
+        );
+        res.json(result.rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error fetching books");
+    }
 });
 
-/* ------------------ CART ------------------ */
-app.post("/cart", async (req, res) => {
-  const { buyer_id, book_id, quantity, title, price } = req.body;
+app.post("/cart", async(req,res) =>{
+    const {buyer_id, book_id, quantity,title,price} = req.body;
 
-  try {
-    const result = await con.query(
-      "INSERT INTO cart(buyer_id, book_id, quantity,title,price) VALUES($1, $2, $3, $4, $5) RETURNING *",
-      [buyer_id, book_id, quantity, title, price]
-    );
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Error adding to cart");
-  }
+    try {
+        const result = await con.query(
+            "INSERT INTO cart(buyer_id, book_id, quantity,title,price) VALUES($1, $2, $3,$4,$5) RETURNING *",
+            [buyer_id, book_id, quantity,title,price]
+        );
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error adding to cart");
+    }
 });
 
 app.get("/cart/:buyer_id", async (req, res) => {
-  const buyer_id = parseInt(req.params.buyer_id, 10);
+  const buyer_id = parseInt(req.params.buyer_id, 10); // just assign number
   if (isNaN(buyer_id)) return res.status(400).send("Invalid buyer_id");
 
   try {
@@ -363,65 +127,43 @@ app.get("/cart/:buyer_id", async (req, res) => {
   }
 });
 
-app.delete("/cart/:id", async (req, res) => {
-  const cartId = parseInt(req.params.id, 10);
 
-  if (isNaN(cartId)) {
-    return res.status(400).send("Invalid cart item id");
-  }
+app.post("/orders", async(req,res) => {
+    const {buyer_id, seller_id, book_id, status} = req.body;
 
-  try {
-    const result = await con.query(
-      "DELETE FROM cart WHERE id = $1 RETURNING *",
-      [cartId]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).send("Cart item not found");
+    try {
+        const result = await con.query(
+            "INSERT INTO orders(buyer_id, seller_id, book_id, status) VALUES($1, $2, $3, $4) RETURNING *",
+            [buyer_id, seller_id, book_id, status]
+        );
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error placing order");
     }
-
-    res.json({ message: "Cart item removed", item: result.rows[0] });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Error removing cart item");
-  }
 });
 
-/* ------------------ ORDERS ------------------ */
-app.post("/orders", async (req, res) => {
-  const { buyer_id, seller_id, book_id, status } = req.body;
+app.get("/orders/:seller_id", async(req,res) => {
 
-  try {
-    const result = await con.query(
-      "INSERT INTO orders(buyer_id, seller_id, book_id, status) VALUES($1, $2, $3, $4) RETURNING *",
-      [buyer_id, seller_id, book_id, status]
-    );
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Error placing order");
-  }
+    const {seller_id} = req.params;
+
+    try {
+        const result = await con.query(
+            `SELECT o.id, b.title, b.price, o.status, u.name as buyer_name 
+             FROM orders o 
+             JOIN books b ON o.book_id = b.id 
+             JOIN users u ON o.buyer_id = u.id 
+             WHERE o.seller_id = $1`,
+            [seller_id]
+        );
+        res.json(result.rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error fetching orders");
+    }
 });
 
-app.get("/orders/:seller_id", async (req, res) => {
-  const { seller_id } = req.params;
-
-  try {
-    const result = await con.query(
-      `SELECT o.id, b.title, b.price, o.status, u.name as buyer_name 
-       FROM orders o 
-       JOIN books b ON o.book_id = b.id 
-       JOIN users u ON o.buyer_id = u.id 
-       WHERE o.seller_id = $1`,
-      [seller_id]
-    );
-    res.json(result.rows);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Error fetching orders");
-  }
-});
-
+// Update order status
 app.put("/orders/:id", async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
@@ -443,7 +185,8 @@ app.put("/orders/:id", async (req, res) => {
   }
 });
 
-/* ------------------ USERS (roles) ------------------ */
+
+// Get both buyer and seller accounts for a user
 app.get("/users/:name", async (req, res) => {
   const { name } = req.params;
 
@@ -457,16 +200,39 @@ app.get("/users/:name", async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    res.json(result.rows);
+    res.json(result.rows); // e.g. [{id:1,role:'buyer'},{id:2,role:'seller'}]
   } catch (error) {
     console.error(error);
     res.status(500).send("Error fetching user roles");
   }
 });
 
-/* ------------------ SERVER ------------------ */
-const PORT = process.env.PORT || 6000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.delete("/cart/:id", async (req, res) => {
+    const cartId = parseInt(req.params.id, 10);
+
+    if (isNaN(cartId)) {
+        return res.status(400).send("Invalid cart item id");
+    }
+
+    try {
+        const result = await con.query(
+            "DELETE FROM cart WHERE id = $1 RETURNING *",
+            [cartId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).send("Cart item not found");
+        }
+
+        res.json({ message: "Cart item removed", item: result.rows[0] });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error removing cart item");
+    }
 });
 
+
+
+app.listen(6000, () =>{
+    console.log("Server is running on port 6000");
+})
