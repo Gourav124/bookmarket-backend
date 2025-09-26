@@ -5,8 +5,30 @@ const express = require('express');
 require('dotenv').config()
 
 const app = express();
+
+// Enable CORS for all routes
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
 app.use(express.json());
 
+// Health check endpoint
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Book Market API is running!', 
+    status: 'healthy',
+    timestamp: new Date().toISOString()
+  });
+});
 
 // const con = new Client({
 //     host: 'localhost',
@@ -243,6 +265,10 @@ app.delete("/cart/:id", async (req, res) => {
 
 
 
-app.listen(process.env.PORT, () =>{
-    console.log("Server is running on port 6000");
+const PORT = process.env.PORT || 6000;
+
+app.listen(PORT, () =>{
+    console.log(`Server is running on port ${PORT}`);
 })
+
+module.exports = app;
