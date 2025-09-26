@@ -1,20 +1,30 @@
 const {Client} = require('pg');
+const { Pool } = require ('pg');
 const express = require('express');
+
+require('dotenv').config()
 
 const app = express();
 app.use(express.json());
 
 
-const con = new Client({
-    host: 'localhost',
-    user:'postgres',
-    port: 5432,
-    password:'Gour@v@2002',
-    database:'bookmarket'
+// const con = new Client({
+//     host: 'localhost',
+//     user:'postgres',
+//     port: 5432,
+//     password:'Gour@v@2002',
+//     database:'bookmarket'
 
+// });
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
 });
 
-con.connect().then(() => {
+pool.connect().then(() => {
     console.log("Database connected successfully");
 });
 
@@ -22,7 +32,7 @@ app.post("/users",async(req,res) => {
     const {name,role} = req.body;
 
     try {
-        const result = await con.query(
+        const result = await pool.query(
             "INSERT INTO users(name,role) VALUES($1,$2) RETURNING *",
             [name,role]
         );
@@ -36,7 +46,7 @@ app.post("/users",async(req,res) => {
 
 app.get("/users",async(req,res) => {
     try {
-        const result = await con.query("SELECT * FROM users");
+        const result = await pool.query("SELECT * FROM users");
         res.json(result.rows);
     } catch (error) {
         console.error(error);
@@ -48,7 +58,7 @@ app.post("/books", async(req,res) => {
     const {seller_id,title,description,price,stock,image_url} = req.body;
 
     try {
-        const result = await con.query(
+        const result = await pool.query(
             "INSERT INTO books(seller_id, title, description, price, stock, image_url) VALUES($1, $2, $3, $4, $5, $6) RETURNING *",
             [seller_id, title, description, price, stock, image_url]
         );
@@ -67,7 +77,7 @@ app.get("/books/:seller_id", async (req, res) => {
     }
 
     try {
-        const result = await con.query(
+        const result = await pool.query(
             "SELECT * FROM books WHERE seller_id = $1",
             [sellerId]
         );
@@ -81,7 +91,7 @@ app.get("/books/:seller_id", async (req, res) => {
 
 app.get("/books",async(req,res) => {
     try {
-        const result = await con.query(
+        const result = await pool.query(
             `SELECT b.*, u.name as seller_name 
              FROM books b 
              JOIN users u ON b.seller_id = u.id`
@@ -97,7 +107,7 @@ app.post("/cart", async(req,res) =>{
     const {buyer_id, book_id, quantity,title,price} = req.body;
 
     try {
-        const result = await con.query(
+        const result = await pool.query(
             "INSERT INTO cart(buyer_id, book_id, quantity,title,price) VALUES($1, $2, $3,$4,$5) RETURNING *",
             [buyer_id, book_id, quantity,title,price]
         );
@@ -113,7 +123,7 @@ app.get("/cart/:buyer_id", async (req, res) => {
   if (isNaN(buyer_id)) return res.status(400).send("Invalid buyer_id");
 
   try {
-    const result = await con.query(
+    const result = await pool.query(
       `SELECT c.id, b.title, b.price, c.quantity
        FROM cart c
        JOIN books b ON c.book_id = b.id
@@ -132,7 +142,7 @@ app.post("/orders", async(req,res) => {
     const {buyer_id, seller_id, book_id, status} = req.body;
 
     try {
-        const result = await con.query(
+        const result = await pool.query(
             "INSERT INTO orders(buyer_id, seller_id, book_id, status) VALUES($1, $2, $3, $4) RETURNING *",
             [buyer_id, seller_id, book_id, status]
         );
@@ -148,7 +158,7 @@ app.get("/orders/:seller_id", async(req,res) => {
     const {seller_id} = req.params;
 
     try {
-        const result = await con.query(
+        const result = await pool.query(
             `SELECT o.id, b.title, b.price, o.status, u.name as buyer_name 
              FROM orders o 
              JOIN books b ON o.book_id = b.id 
@@ -169,7 +179,7 @@ app.put("/orders/:id", async (req, res) => {
   const { status } = req.body;
 
   try {
-    const result = await con.query(
+    const result = await pool.query(
       "UPDATE orders SET status = $1 WHERE id = $2 RETURNING *",
       [status, id]
     );
@@ -191,7 +201,7 @@ app.get("/users/:name", async (req, res) => {
   const { name } = req.params;
 
   try {
-    const result = await con.query(
+    const result = await pool.query(
       "SELECT id, role FROM users WHERE name = $1",
       [name]
     );
@@ -215,7 +225,7 @@ app.delete("/cart/:id", async (req, res) => {
     }
 
     try {
-        const result = await con.query(
+        const result = await pool.query(
             "DELETE FROM cart WHERE id = $1 RETURNING *",
             [cartId]
         );
@@ -233,6 +243,8 @@ app.delete("/cart/:id", async (req, res) => {
 
 
 
-app.listen(6000, () =>{
+app.listen(process.env.PORT, () =>{
     console.log("Server is running on port 6000");
 })
+
+module.exports = pool;
