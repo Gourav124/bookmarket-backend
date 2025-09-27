@@ -125,20 +125,34 @@ app.get("/books",async(req,res) => {
     }
 });
 
-app.post("/cart", async(req,res) =>{
-    const {buyer_id, book_id, quantity,title,price} = req.body;
+app.post("/cart", async (req, res) => {
+  const { buyer_id, book_id, quantity, title, price } = req.body;
 
-    try {
-        const result = await pool.query(
-            "INSERT INTO cart(buyer_id, book_id, quantity,title,price) VALUES($1, $2, $3,$4,$5) RETURNING *",
-            [buyer_id, book_id, quantity,title,price]
-        );
-        res.json(result.rows[0]);
-    } catch (error) {
-        console.error(error);
-        res.status(500).send("Error adding to cart");
+  try {
+    // 🟨 Step 1: Check if the book already exists for this buyer
+    const check = await pool.query(
+      "SELECT * FROM cart WHERE buyer_id = $1 AND book_id = $2",
+      [buyer_id, book_id]
+    );
+
+    if (check.rows.length > 0) {
+      // 🟥 If already in cart, return conflict response
+      return res.status(409).json({ message: "Book already in cart" });
     }
+
+    // 🟩 Step 2: If not, insert new record
+    const result = await pool.query(
+      "INSERT INTO cart(buyer_id, book_id, quantity, title, price) VALUES($1, $2, $3, $4, $5) RETURNING *",
+      [buyer_id, book_id, quantity, title, price]
+    );
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error adding to cart");
+  }
 });
+
 
 app.get("/cart/:buyer_id", async (req, res) => {
   const buyer_id = parseInt(req.params.buyer_id, 10); // just assign number
